@@ -8,7 +8,11 @@ from app.core.database import engine, Base
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title=settings.APP_NAME, version=settings.VERSION)
+app = FastAPI(
+    title="Nutrition Service",
+    description="Service for managing products and meals",
+    version=settings.VERSION
+)
 
 # Health-check для високого рівня
 @app.get("/health", tags=["System"])

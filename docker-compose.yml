@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # --- ІНФРАСТРУКТУРА ---
+
+  db:
+    image: postgres:15
+    container_name: nutrition_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: app_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    container_name: nutrition_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # --- МІКРОСЕРВІСИ ---
+
+  user_service:
+    build: ./user_service
+    container_name: user_service
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/app_db
+    depends_on:
+      - db
+
+  nutrition_service:
+    build: ./nutrition_service
+    container_name: nutrition_service
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/app_db
+      - REDIS_HOST=redis
+      - USER_SERVICE_URL=http://user_service:8001
+    depends_on:
+      - db
+      - redis
+
+  cv_service:
+    build: ./CV_service
+    container_name: cv_service
+    ports:
+      - "8004:8004"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/app_db
+    depends_on:
+      - db
+
+  report_service:
+    build: ./report_service
+    container_name: report_service
+    ports:
+      - "8003:8003"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/app_db
+      - NUTRITION_SERVICE_URL=http://nutrition_service:8002
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

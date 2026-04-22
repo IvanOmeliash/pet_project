@@ -10,8 +10,8 @@ from app.models import entities
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="User Identity Service",
-    description="Service for managing user profiles and auth",
+    title="Reporting Service",
+    description="Service for generating nutritional reports",
     version=settings.VERSION
 )
 

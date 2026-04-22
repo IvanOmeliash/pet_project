@@ -5,13 +5,12 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from datetime import datetime
 from app.core.database import engine, Base
-from app.models import entities
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="User Identity Service",
-    description="Service for managing user profiles and auth",
+    title="CV Analysis Service",
+    description="Service for food recognition and CV tasks",
     version=settings.VERSION
 )
 
