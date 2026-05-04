@@ -1,4 +1,5 @@
 import json
+import time
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -30,11 +31,13 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
 def read_products(skip: int = 0, limit: int = 10, search: Optional[str] = None, db: Session = Depends(get_db)):
     # ПУНКТ 4: Перевірка кешу
     # Створюємо унікальний ключ для різних фільтрів
+    start_time = time.time()
     cache_key = f"{CACHE_KEY_PRODUCTS}:{skip}:{limit}:{search}"
     cached_data = redis_client.get(cache_key)
 
     if cached_data:
-        print("--- Віддаємо дані з REDIS ---")  # Для логів у звіті
+        process_time = time.time() - start_time
+        print(f"--- Віддаємо дані з REDIS --- Час: {process_time:.5f} секунд", flush=True)
         return json.loads(cached_data)
 
     print("--- Йдемо в базу даних (POSTGRES) ---")
@@ -49,6 +52,9 @@ def read_products(skip: int = 0, limit: int = 10, search: Optional[str] = None, 
 
     # Зберігаємо в Redis
     redis_client.setex(cache_key, CACHE_EXPIRE, json.dumps(products_json))
+
+    process_time = time.time() - start_time
+    print(f"--- Дані отримано з БД --- Час: {process_time:.5f} секунд")
 
     return products
 
